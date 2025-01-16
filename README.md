@@ -9,6 +9,5 @@
 - The project is built using CMake.
 - Valgrind is used for memory leak detection.
 ## External libraries
-- GLFW
-- Audiokinetic Wwise
+- Raylib is used for graphics rendering. https://www.raylib.com/, https://github.com/raysan5/raylib
 - Googletest is used for unit testing.

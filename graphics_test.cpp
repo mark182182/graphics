@@ -1,61 +1,40 @@
 ﻿#include "graphics_test.h"
-#include <glad.h>
-#include <GLFW/glfw3.h>
 #include <cassert>
-
-
-using namespace std;
-
-struct vec2 {
-  int x, y;
-};
-
-struct vec3 {
-  int x, y, z;
-};
-
-void error_callback(int error, const char *description) {
-  fprintf(stderr, "Error: %s\n", description);
-};
+#include <raylib.h>
 
 int main() {
-  vec2 *v2 = new vec2{1, 2};
-  vec3 *v3 = new vec3{3, 4, 5};
 
-  assert(1 == 1);
+  const int screenWidth = 800;
+  const int screenHeight = 450;
 
-  GLFWwindow *window;
+  InitWindow(screenWidth, screenHeight, "Graphics example");
+  SetTargetFPS(60);
 
-  if (!glfwInit()) {
-    return -1;
+  // load any long living resources here
+
+  Font font =
+      LoadFontEx("resources/fonts/firacode/FiraCode-Retina.ttf", 32, 0, 250);
+
+  SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
+  char *text = "La Baguette";
+  Vector2 textPosition = {screenWidth / 2 -
+                              MeasureTextEx(font, text, 32, 0).x / 2,
+                          screenHeight / 2 - 32 / 2};
+
+  while (!WindowShouldClose()) {
+    // update variables here
+
+    ShowCursor();
+
+    Vector2 cursorPosition = GetMousePosition();
+    // draw
+    BeginDrawing();
+    ClearBackground(WHITE);
+    DrawTextEx(font, text, textPosition, 32, 0, BLACK);
+    DrawRectangle(cursorPosition.x, cursorPosition.y, 20, 20, RED);
+    EndDrawing();
   }
-
-  // after initializing glfw
-
-  glfwSetErrorCallback(error_callback);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  window = glfwCreateWindow(1024, 768, "Graphics test", NULL, NULL);
-
-  if (!window) {
-    glfwTerminate();
-    return -1;
-  }
-
-  glfwMakeContextCurrent(window);
-  gladLoadGL(glfwGetProcAddress);
-
-  while (!glfwWindowShouldClose(window)) {
-    // render here
-
-    glClear(GL_COLOR_BUFFER_BIT);
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-  }
-
-  glfwTerminate();
 
   _CrtDumpMemoryLeaks();
   return 0;
