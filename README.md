@@ -15,8 +15,9 @@
 
 # Project 1: Game of Life
 - Conway's famous game of life celluar automation using OpenGL.
-## Solution in 2D
 - Use SMID and AVX instructions for calculation ([docs](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#techs=AVX))
+## Solution in 2D
+- TBD
 ## Solution in 3D
 - TBD
 
