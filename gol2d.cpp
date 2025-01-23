@@ -5,40 +5,62 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <array>
+#include <immintrin.h>
 
 namespace Gol2d {
 
-void CellDict::setArraysSizeBasedOnScreenSize(CellDict *cd) {
+void CellDict::initArraysSizeBasedOnScreenSize() {
   const int screenWidth = GetScreenWidth();
   const int screenHeight = GetScreenHeight();
   const int cellCount =
       screenWidth * screenHeight / (CELL_HEIGHT_SIZE * CELL_WIDTH_SIZE);
+  this->cellCount = cellCount;
 
-  if (cd->cells[0]) {
-    for (int i = 0; i < cellCount; i++) {
-      delete cd->cells[i];
+  Cell **cells = new Cell *[cellCount];
+  Color **colors = new Color *[cellCount];
+
+  for (int i = 0; i < cellCount; i++) {
+    Cell *cell = new Cell;
+    cells[i] = cell;
+
+    Color *color = new Color;
+    colors[i] = color;
+  }
+
+  this->cells = cells;
+
+  int *positionsX = new int[cellCount];
+  this->positionsX = positionsX;
+
+  int *positionsY = new int[cellCount];
+  this->positionsY = positionsY;
+
+  this->colors = colors;
+}
+
+void CellDict::freeArrays() {
+  if (this->cells != nullptr && this->cells[0] != nullptr) {
+    for (int i = 0; i < this->cellCount; i++) {
+      delete this->cells[i];
+      delete this->colors[i];
     }
   }
 }
 
 /*
-Generate random values
+Generate random values for each array
 */
 CellDict *Generator::initializeCells(CellDict *cd) {
-  int screenWidth = GetScreenWidth();
-  int screenHeight = GetScreenHeight();
-
-  CellDict::setArraysSizeBasedOnScreenSize(cd);
   int i = 0;
-  for (int posX = 0; posX < screenWidth; posX = posX + CELL_WIDTH_SIZE) {
-    for (int posY = 0; posY < screenHeight; posY = posY + CELL_HEIGHT_SIZE) {
-      Cell *cell = new Cell;
-      cell->is_alive = {rand() % INITIAL_FREQUENCY == 0};
-      cd->cells[i] = cell;
+  for (int posX = 0; posX < GetScreenWidth(); posX += +CELL_WIDTH_SIZE) {
+    for (int posY = 0; posY < GetScreenHeight(); posY += CELL_HEIGHT_SIZE) {
+      cd->cells[i]->is_alive = {std::rand() % INITIAL_FREQUENCY == 0};
       cd->positionsX[i] = posX;
       cd->positionsY[i] = posY;
-      cd->colors[i] = rand() % 2 == 0 ? &Const::RANDOM_COLORS[rand() % 20]
-                                      : &Const::RANDOM_COLORS[rand() % 20];
+      cd->colors[i]->r = std::rand() + 255;
+      cd->colors[i]->g = std::rand() + 255;
+      cd->colors[i]->b = std::rand() + 255;
+      cd->colors[i]->a = 255;
       i++;
     }
   }

@@ -2,7 +2,7 @@
 #include <crtdbg.h>
 
 int main() {
-  Generator::render();
+  Renderer::render();
   _CrtDumpMemoryLeaks();
   return 0;
 }

@@ -1,8 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-typedef struct Generator {
+typedef struct Renderer {
   static void render();
-} Generator;
+} Renderer;
 
 #endif

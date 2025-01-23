@@ -8,12 +8,11 @@
 #include <stdlib.h>
 #include <string>
 
-void Generator::render() {
+void Renderer::render() {
   const int screenWidth = 1280;
   const int screenHeight = 720;
 
   InitWindow(screenWidth, screenHeight, "Graphics example");
-  SetTargetFPS(60);
 
   // load any long living resources here
   DisplayFont::FontDict *fd = DisplayFont::loadFonts();
@@ -22,8 +21,11 @@ void Generator::render() {
   bool isWireframeMode = false;
   int pressed = 0;
   float deltaTime = 0;
+  int fpsCap = 60;
+  SetTargetFPS(fpsCap);
+
   Gol2d::CellDict *cd = new Gol2d::CellDict;
-  // these will be the initial values
+  cd->initArraysSizeBasedOnScreenSize();
   cd = Gol2d::Generator::initializeCells(cd);
 
   while (!WindowShouldClose() && pressed != 'q') {
@@ -37,6 +39,14 @@ void Generator::render() {
     BeginDrawing();
     HideCursor();
 
+    if (fpsCap == 60 && pressed == 'c') {
+      fpsCap = 0;
+      SetTargetFPS(fpsCap);
+    } else if (fpsCap == 0 && pressed == 'c') {
+      fpsCap = 60;
+      SetTargetFPS(fpsCap);
+    }
+
     if (!isWireframeMode && pressed == 't') {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       isWireframeMode = true;
@@ -46,12 +56,13 @@ void Generator::render() {
     }
 
     if (deltaTime >= 0.2) {
+      // TODO: this should be iterate cells instead
       cd = Gol2d::Generator::initializeCells(cd);
       deltaTime = 0;
     }
     deltaTime += GetFrameTime();
 
-    for (int i = 0; i < sizeof(cd->cells) / sizeof(cd->cells[0]); i++) {
+    for (int i = 0; i < cd->cellCount; i++) {
       if (cd->cells[i]->is_alive) {
         DrawRectangle(cd->positionsX[i], cd->positionsY[i],
                       Gol2d::CELL_HEIGHT_SIZE, Gol2d::CELL_WIDTH_SIZE,
@@ -66,5 +77,11 @@ void Generator::render() {
     DrawText("Press 't' for wireframe mode", 10, 70, 32, RED);
     DrawText("Press 'q' to quit", 10, 110, 32, RED);
     EndDrawing();
+
+    // free objects after each frame
   }
+
+  // free any objects that are long living, but don't need to be present on
+  // every frame
+  cd->freeArrays();
 }
