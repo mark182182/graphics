@@ -15,9 +15,8 @@ void FullScreenNoise::render() {
 
   for (int posX = 0; posX < screenWidth; posX = posX + 5) {
     for (int posY = 0; posY < screenHeight; posY = posY + 5) {
-        DrawRectangle(posX, posY, CELL_HEIGHT_SIZE, CELL_WIDTH_SIZE,
-                    rand() % 2 == 0 ? Const::RANDOM_COLORS[rand() % 20]
-                                    : Const::RANDOM_COLORS[rand() % 20]);
+      DrawRectangle(posX, posY, CELL_HEIGHT_SIZE, CELL_WIDTH_SIZE,
+                    Const::RANDOM_COLORS[rand() % 20]);
     }
   }
 }

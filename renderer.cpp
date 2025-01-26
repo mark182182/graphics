@@ -24,7 +24,7 @@ void Renderer::render() {
   int fpsCap = 60;
   SetTargetFPS(fpsCap);
 
-  Gol2d::CellDict *cd = new Gol2d::CellDict;
+  Gol2d::CellsToDrawSOA *cd = new Gol2d::CellsToDrawSOA;
   cd->initArraysSizeBasedOnScreenSize();
   cd = Gol2d::Generator::initializeCells(cd);
 

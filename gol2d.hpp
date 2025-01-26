@@ -12,9 +12,7 @@ typedef struct Cell {
   bool is_alive; // populated or unpopulated
 } Cell;
 
-// Try to run a test with all 3 and check which uses the least amount of memory
-// (should be CellDict or CellDictFixedLength)
-typedef struct CellDict {
+typedef struct CellsToDrawSOA {
   Cell **cells;
   int *positionsX;
   int *positionsY;
@@ -22,30 +20,14 @@ typedef struct CellDict {
   int cellCount;
   void initArraysSizeBasedOnScreenSize();
   void freeArrays();
-} CellDict;
-
-typedef struct CellDictFixedLength {
-  Cell *cells[36864];
-  int positionsX[36864]{};
-  int positionsY[36864]{};
-  Color *colors[36864]{};
-  // void initArraysSizeBasedOnScreenSize();
-} CellDictFixedLength;
-
-typedef struct CellWithAllValues {
-  bool is_alive;
-  int positionX;
-  int positionY;
-  Color *color;
-  // CellWithAllValues *getCellsWithAllValues();
-} CellWithAllValues;
+} CellsToDrawSOA;
 
 typedef struct Generator {
-  static CellDict *initializeCells(CellDict *cd);
-  static CellDict *iterateCells(CellDict *cd);
+  static CellsToDrawSOA *initializeCells(CellsToDrawSOA *cd);
+  static CellsToDrawSOA *iterateCells(CellsToDrawSOA *cd);
 
 private:
-  void checkNeightbours(CellDict *cd);
+  void checkNeightbours(CellsToDrawSOA *cd);
 } Generator;
 
 } // namespace Gol2d

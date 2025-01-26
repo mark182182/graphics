@@ -9,7 +9,7 @@
 
 namespace Gol2d {
 
-void CellDict::initArraysSizeBasedOnScreenSize() {
+void CellsToDrawSOA::initArraysSizeBasedOnScreenSize() {
   const int screenWidth = GetScreenWidth();
   const int screenHeight = GetScreenHeight();
   const int cellCount =
@@ -22,9 +22,6 @@ void CellDict::initArraysSizeBasedOnScreenSize() {
   for (int i = 0; i < cellCount; i++) {
     Cell *cell = new Cell;
     cells[i] = cell;
-
-    Color *color = new Color;
-    colors[i] = color;
   }
 
   this->cells = cells;
@@ -38,11 +35,10 @@ void CellDict::initArraysSizeBasedOnScreenSize() {
   this->colors = colors;
 }
 
-void CellDict::freeArrays() {
+void CellsToDrawSOA::freeArrays() {
   if (this->cells != nullptr && this->cells[0] != nullptr) {
     for (int i = 0; i < this->cellCount; i++) {
       delete this->cells[i];
-      delete this->colors[i];
     }
   }
 }
@@ -50,17 +46,14 @@ void CellDict::freeArrays() {
 /*
 Generate random values for each array
 */
-CellDict *Generator::initializeCells(CellDict *cd) {
+CellsToDrawSOA *Generator::initializeCells(CellsToDrawSOA *cd) {
   int i = 0;
-  for (int posX = 0; posX < GetScreenWidth(); posX += +CELL_WIDTH_SIZE) {
+  for (int posX = 0; posX < GetScreenWidth(); posX += CELL_WIDTH_SIZE) {
     for (int posY = 0; posY < GetScreenHeight(); posY += CELL_HEIGHT_SIZE) {
       cd->cells[i]->is_alive = {std::rand() % INITIAL_FREQUENCY == 0};
       cd->positionsX[i] = posX;
       cd->positionsY[i] = posY;
-      cd->colors[i]->r = std::rand() + 255;
-      cd->colors[i]->g = std::rand() + 255;
-      cd->colors[i]->b = std::rand() + 255;
-      cd->colors[i]->a = 255;
+      cd->colors[i] = &Const::RANDOM_COLORS[std::rand() % 20];
       i++;
     }
   }
@@ -75,12 +68,12 @@ or three live neighbours lives on to the next generation. Any live cell with
 more than three live neighbours dies, as if by overpopulation. Any dead cell
 with exactly three live neighbours becomes a live cell, as if by reproduction.
 */
-CellDict *Generator::iterateCells(CellDict *cd) {
+CellsToDrawSOA *Generator::iterateCells(CellsToDrawSOA *cd) {
   // TODO here we do the iteration based on the ruleset
   return NULL;
 }
 
-void Generator::checkNeightbours(CellDict *cd) {
+void Generator::checkNeightbours(CellsToDrawSOA *cd) {
   for (int i = 0; i < sizeof(cd->cells); i++) {
     // check neightbours
   }
