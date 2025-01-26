@@ -6,76 +6,178 @@
 #include <iostream>
 #include <array>
 #include <immintrin.h>
+#include <map>
+#include <string>
 
 namespace Gol2d {
 
-void CellsToDrawSOA::initArraysSizeBasedOnScreenSize() {
+void Generator::initArraysSizeBasedOnScreenSize(CellsToDrawSOA *cd) {
   const int screenWidth = GetScreenWidth();
   const int screenHeight = GetScreenHeight();
   const int cellCount =
       screenWidth * screenHeight / (CELL_HEIGHT_SIZE * CELL_WIDTH_SIZE);
-  this->cellCount = cellCount;
+  cd->cellCount = cellCount;
 
   Cell **cells = new Cell *[cellCount];
-  Color **colors = new Color *[cellCount];
 
   for (int i = 0; i < cellCount; i++) {
     Cell *cell = new Cell;
     cells[i] = cell;
   }
 
-  this->cells = cells;
+  cd->cells = cells;
 
   int *positionsX = new int[cellCount];
-  this->positionsX = positionsX;
+  cd->positionsX = positionsX;
 
   int *positionsY = new int[cellCount];
-  this->positionsY = positionsY;
+  cd->positionsY = positionsY;
 
-  this->colors = colors;
+  Color **colors = new Color *[cellCount];
+  cd->colors = colors;
+
+  std::unordered_map<std::string, bool> *cellAliveByXY =
+      new std::unordered_map<std::string, bool>;
+  cellAliveByXY = {};
+  cd->cellAliveByXY = cellAliveByXY;
 }
 
-void CellsToDrawSOA::freeArrays() {
-  if (this->cells != nullptr && this->cells[0] != nullptr) {
-    for (int i = 0; i < this->cellCount; i++) {
-      delete this->cells[i];
+void Generator::freeArrays(CellsToDrawSOA *cd) {
+  if (cd->cells != nullptr && cd->cells[0] != nullptr) {
+    for (int i = 0; i < cd->cellCount; i++) {
+      delete cd->cells[i];
     }
+    cd->cellAliveByXY->clear();
+    delete cd->cellAliveByXY;
   }
 }
 
-/*
-Generate random values for each array
-*/
-CellsToDrawSOA *Generator::initializeCells(CellsToDrawSOA *cd) {
+void Generator::initializeCells(CellsToDrawSOA *cd) {
   int i = 0;
   for (int posX = 0; posX < GetScreenWidth(); posX += CELL_WIDTH_SIZE) {
+
     for (int posY = 0; posY < GetScreenHeight(); posY += CELL_HEIGHT_SIZE) {
-      cd->cells[i]->is_alive = {std::rand() % INITIAL_FREQUENCY == 0};
+      bool is_alive = std::rand() % INITIAL_FREQUENCY == 0;
+      cd->cells[i]->is_alive = is_alive;
       cd->positionsX[i] = posX;
       cd->positionsY[i] = posY;
+
+      std::string lookupKey = std::to_string(posX) + "," + std::to_string(posY);
+      (*cd->cellAliveByXY)[lookupKey] = is_alive;
       cd->colors[i] = &Const::RANDOM_COLORS[std::rand() % 20];
       i++;
     }
   }
-  return cd;
 }
 
-/*
-Ruleset (brought to you by wikipedia:
-https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life): Any live cell with fewer
-than two live neighbours dies, as if by underpopulation. Any live cell with two
-or three live neighbours lives on to the next generation. Any live cell with
-more than three live neighbours dies, as if by overpopulation. Any dead cell
-with exactly three live neighbours becomes a live cell, as if by reproduction.
-*/
-CellsToDrawSOA *Generator::iterateCells(CellsToDrawSOA *cd) {
-  // TODO here we do the iteration based on the ruleset
-  return NULL;
+CellsToDrawSOA *Generator::deepCopy(CellsToDrawSOA *originalCd) {
+  Gol2d::CellsToDrawSOA *newCd = new Gol2d::CellsToDrawSOA;
+  Gol2d::Generator::initArraysSizeBasedOnScreenSize(newCd);
+
+  int cellCount = originalCd->cellCount;
+  newCd->cellCount = cellCount;
+
+  Cell **newCells = new Cell *[cellCount];
+
+  int *newPositionsX = new int[cellCount];
+  int *newPositionsY = new int[cellCount];
+
+  Color **newColors = new Color *[cellCount];
+
+  for (int i = 0; i < cellCount; i++) {
+
+    Cell *cell = new Cell;
+    cell->is_alive = originalCd->cells[i]->is_alive;
+    newCells[i] = cell;
+
+    newPositionsX[i] = originalCd->positionsX[i];
+    newPositionsY[i] = originalCd->positionsY[i];
+    newColors[i] = originalCd->colors[i];
+  }
+
+  newCd->cells = newCells;
+  newCd->positionsX = newPositionsX;
+  newCd->positionsY = newPositionsY;
+  newCd->colors = newColors;
+
+  std::unordered_map<std::string, bool> newCellAliveByXY = {};
+
+  for (auto i : *originalCd->cellAliveByXY) {
+    newCellAliveByXY[i.first] = *originalCd->cellAliveByXY[i.first];
+  }
+
+  newCd->cellAliveByXY = &newCellAliveByXY;
+
+  return newCd;
 }
 
-void Generator::checkNeightbours(CellsToDrawSOA *cd) {
-  for (int i = 0; i < sizeof(cd->cells); i++) {
-    // check neightbours
+void Generator::nextGeneration(CellsToDrawSOA *cd, CellsToDrawSOA *previousCd) {
+
+  for (int i = 0; i < cd->cellCount; i++) {
+    int neighbours = checkNeighbours(previousCd, previousCd->positionsX[i],
+                                     previousCd->positionsY[i]);
+    std::string lookupKey = std::to_string(cd->positionsX[i]) + "," +
+                            std::to_string(cd->positionsY[i]);
+
+    // under or overpopulation
+    if (neighbours < 2 || neighbours > 3) {
+      cd->cells[i]->is_alive = false;
+      (*cd->cellAliveByXY)[lookupKey] = false;
+      // reproduction
+    } else if (!cd->cells[i]->is_alive && neighbours == 3) {
+      cd->cells[i]->is_alive = true;
+      (*cd->cellAliveByXY)[lookupKey] = true;
+    }
+  }
+}
+
+int Generator::checkNeighbours(CellsToDrawSOA *cd, int cellPosX, int cellPosY) {
+  // TODO: use SIMD instead
+
+  int diagVecX1 = cellPosX + (DIAGONALS[0].x * CELL_WIDTH_SIZE);
+  int diagVecY1 = cellPosY + (DIAGONALS[0].y * CELL_HEIGHT_SIZE);
+
+  int diagVecX2 = cellPosX + (DIAGONALS[1].x * CELL_WIDTH_SIZE);
+  int diagVecY2 = cellPosY + (DIAGONALS[1].y * CELL_HEIGHT_SIZE);
+
+  int diagVecX3 = cellPosX + (DIAGONALS[2].x * CELL_WIDTH_SIZE);
+  int diagVecY3 = cellPosY + (DIAGONALS[2].y * CELL_HEIGHT_SIZE);
+
+  int diagVecX4 = cellPosX + (DIAGONALS[3].x * CELL_WIDTH_SIZE);
+  int diagVecY4 = cellPosY + (DIAGONALS[3].y * CELL_HEIGHT_SIZE);
+
+  int adjVecX1 = cellPosX + (ADJECENTS[0].x * CELL_WIDTH_SIZE);
+  int adjVecY1 = cellPosY + (ADJECENTS[0].y * CELL_HEIGHT_SIZE);
+
+  int adjVecX2 = cellPosX + (ADJECENTS[1].x * CELL_WIDTH_SIZE);
+  int adjVecY2 = cellPosY + (ADJECENTS[1].y * CELL_HEIGHT_SIZE);
+
+  int adjVecX3 = cellPosX + (ADJECENTS[2].x * CELL_WIDTH_SIZE);
+  int adjVecY3 = cellPosY + (ADJECENTS[2].y * CELL_HEIGHT_SIZE);
+
+  int adjVecX4 = cellPosX + (ADJECENTS[3].x * CELL_WIDTH_SIZE);
+  int adjVecY4 = cellPosY + (ADJECENTS[3].y * CELL_HEIGHT_SIZE);
+
+  int neighbours = 0;
+
+  addNeighbourIfPresent(cd, diagVecX1, diagVecY1, &neighbours);
+  addNeighbourIfPresent(cd, diagVecX2, diagVecY2, &neighbours);
+  addNeighbourIfPresent(cd, diagVecX3, diagVecY3, &neighbours);
+  addNeighbourIfPresent(cd, diagVecX4, diagVecY4, &neighbours);
+  addNeighbourIfPresent(cd, adjVecX1, adjVecY1, &neighbours);
+  addNeighbourIfPresent(cd, adjVecX2, adjVecY2, &neighbours);
+  addNeighbourIfPresent(cd, adjVecX3, adjVecY3, &neighbours);
+  addNeighbourIfPresent(cd, adjVecX4, adjVecY4, &neighbours);
+
+  return neighbours;
+}
+
+void Generator::addNeighbourIfPresent(CellsToDrawSOA *cd, int checkPosX,
+                                      int checkPosY, int *neigbours) {
+  std::string lookupKey =
+      std::to_string(checkPosX) + "," + std::to_string(checkPosY);
+  if ((*cd->cellAliveByXY)[lookupKey]) {
+    (*neigbours)++;
   }
 }
 } // namespace Gol2d

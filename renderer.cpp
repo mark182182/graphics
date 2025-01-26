@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <string>
+#include <time.h>
 
 void Renderer::render() {
   const int screenWidth = 1280;
@@ -25,8 +26,9 @@ void Renderer::render() {
   SetTargetFPS(fpsCap);
 
   Gol2d::CellsToDrawSOA *cd = new Gol2d::CellsToDrawSOA;
-  cd->initArraysSizeBasedOnScreenSize();
-  cd = Gol2d::Generator::initializeCells(cd);
+  Gol2d::Generator::initArraysSizeBasedOnScreenSize(cd);
+  Gol2d::Generator::initializeCells(cd);
+  Gol2d::CellsToDrawSOA *previousCd = nullptr;
 
   while (!WindowShouldClose() && pressed != 'q') {
     ClearBackground(WHITE);
@@ -35,9 +37,6 @@ void Renderer::render() {
 
     Vector2 cursorPosition = GetMousePosition();
     pressed = GetCharPressed();
-
-    BeginDrawing();
-    HideCursor();
 
     if (fpsCap == 60 && pressed == 'c') {
       fpsCap = 0;
@@ -55,9 +54,18 @@ void Renderer::render() {
       isWireframeMode = false;
     }
 
-    if (deltaTime >= 0.2) {
-      // TODO: this should be iterate cells instead
-      cd = Gol2d::Generator::initializeCells(cd);
+    BeginDrawing();
+    HideCursor();
+
+    if (deltaTime >= 1) {
+      auto a = clock();
+
+      // before the next generation, we have to make a copy of the first generation
+      previousCd = Gol2d::Generator::deepCopy(cd);
+      Gol2d::Generator::nextGeneration(cd, previousCd);
+      std::cout << "nextGeneration ticks: " << clock() - a
+                << std::endl; // currently it's around ~12 ticks
+
       deltaTime = 0;
     }
     deltaTime += GetFrameTime();
@@ -83,5 +91,5 @@ void Renderer::render() {
 
   // free any objects that are long living, but don't need to be present on
   // every frame
-  cd->freeArrays();
+  Gol2d::Generator::freeArrays(cd);
 }

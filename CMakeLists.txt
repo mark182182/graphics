@@ -14,7 +14,7 @@ endif()
 project("graphics_test")
 
 # Add source to this project's executable.
-add_executable (graphics_test "main.cpp" "${CMAKE_SOURCE_DIR}/resources" "gol2d.cpp" "font.cpp" "fullscreen_noise.cpp"  "renderer.cpp"  "const.cpp")
+add_executable (graphics_test "main.cpp" "${CMAKE_SOURCE_DIR}/resources" "gol2d.cpp" "font.cpp" "fullscreen_noise.cpp"  "renderer.cpp"  "const.cpp" "hash.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET graphics_test PROPERTY CXX_STANDARD 11)
