@@ -6,4 +6,4 @@ Color RANDOM_COLORS[] = {
     RED,       MAROON, GREEN,    LIME,       DARKGREEN, SKYBLUE, BLUE,
     DARKBLUE,  PURPLE, VIOLET,   DARKPURPLE, BEIGE,     BROWN,   DARKBROWN,
 };
-}
+} // namespace Const
