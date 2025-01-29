@@ -11,11 +11,14 @@
 namespace Gol2d {
 
 void Generator::initArraysBasedOnCellSize(CellsToDrawSOA *cd) {
-  Cell **cells = new Cell *[CELL_COUNT];
+  Cell *cells = (Cell *)_mm_malloc(CELL_COUNT * sizeof(Cell),
+                                   32); // allocates 32-byte aligned memory
+  if (!cells) {
+    throw std::bad_alloc();
+  }
 
   for (int i = 0; i < CELL_COUNT; i++) {
-    Cell *cell = new Cell;
-    cells[i] = cell;
+    new (&cells[i]) Cell; // using placement new, as the storage is aligned
   }
 
   cd->cells = cells;
@@ -31,11 +34,8 @@ void Generator::initArraysBasedOnCellSize(CellsToDrawSOA *cd) {
 }
 
 void Generator::freeArrays(CellsToDrawSOA *cd) {
-  if (cd->cells != nullptr && cd->cells[0] != nullptr) {
-    for (int i = 0; i < CELL_COUNT; i++) {
-      delete cd->cells[i];
-    }
-    delete[] cd->cells;
+  if (cd->cells != nullptr) {
+    _mm_free(cd->cells);
   }
 }
 
@@ -44,7 +44,7 @@ void Generator::initializeCells(CellsToDrawSOA *cd) {
   for (int posX = 0; posX < Const::SCREEN_WIDTH; posX += CELL_WIDTH_RATIO) {
     for (int posY = 0; posY < Const::SCREEN_HEIGHT; posY += CELL_HEIGHT_RATIO) {
       bool is_alive = std::rand() % INITIAL_FREQUENCY == 0;
-      cd->cells[i]->is_alive = is_alive;
+      (&cd->cells[i])->is_alive = is_alive;
       cd->positionsX[i] = posX;
       cd->positionsY[i] = posY;
       cd->colors[i] = &Const::RANDOM_COLORS[std::rand() % 20];
@@ -55,14 +55,15 @@ void Generator::initializeCells(CellsToDrawSOA *cd) {
 
 CellsToDrawSOA *Generator::deepCopyCells(CellsToDrawSOA *originalCd) {
   Gol2d::CellsToDrawSOA *newCd = new Gol2d::CellsToDrawSOA;
-  Gol2d::Generator::initArraysBasedOnCellSize(newCd);
 
-  Cell **newCells = new Cell *[CELL_COUNT];
+  Cell *newCells = (Cell *)_mm_malloc(CELL_COUNT * sizeof(Cell), 32);
+  if (!newCells) {
+    throw std::bad_alloc();
+  }
 
   for (int i = 0; i < CELL_COUNT; i++) {
-    Cell *cell = new Cell;
-    cell->is_alive = originalCd->cells[i]->is_alive;
-    newCells[i] = cell;
+    new (&newCells[i]) Cell();
+    (&newCells[i])->is_alive = (&originalCd->cells[i])->is_alive;
   }
 
   newCd->cells = newCells;
@@ -75,36 +76,32 @@ void Generator::nextGeneration(CellsToDrawSOA *cd, CellsToDrawSOA *previousCd) {
     int neighbours = checkNeighbours(previousCd, i);
     // under or overpopulation
     if (neighbours < 2 || neighbours > 3) {
-      cd->cells[i]->is_alive = false;
+      (&cd->cells[i])->is_alive = false;
       // reproduction
-    } else if (!cd->cells[i]->is_alive && neighbours == 3) {
-      cd->cells[i]->is_alive = true;
+    } else if (!(&cd->cells[i])->is_alive && neighbours == 3) {
+      (&cd->cells[i])->is_alive = true;
     }
   }
-  // TODO: previousCd is not needed anymore, can be freed, but currently there
-  // is a memory leak
-  //freeArrays(previousCd);
-  //delete previousCd;
+  freeArrays(previousCd);
 }
 
 int Generator::checkNeighbours(CellsToDrawSOA *previousCd, int i) {
   int neighbours = 0;
+  int arraySize = (CELL_COUNT - 1);
 
-  // TODO: does not work for some reason
   for (int diagIdx : DIAGONAL_INDEXES) {
     int relativeDiagIdx = diagIdx + i;
-    if (relativeDiagIdx >= 0 && relativeDiagIdx <= (CELL_COUNT - 1) &&
-        previousCd->cells[relativeDiagIdx]->is_alive) {
+    if (relativeDiagIdx >= 0 && relativeDiagIdx <= arraySize &&
+        (&previousCd->cells[relativeDiagIdx])->is_alive) {
       // the relative diagonal cell
       neighbours++;
     }
   }
 
-  // TODO: does not work for some reason
   for (int adjIdx : ADJECENT_INDEXES) {
     int relativeAdjIdx = adjIdx + i;
-    if (relativeAdjIdx >= 0 && relativeAdjIdx <= (CELL_COUNT - 1) &&
-        previousCd->cells[relativeAdjIdx]->is_alive) {
+    if (relativeAdjIdx >= 0 && relativeAdjIdx <= arraySize &&
+        (&previousCd->cells[relativeAdjIdx])->is_alive) {
       // the adjecent diagonal cell
       neighbours++;
     }

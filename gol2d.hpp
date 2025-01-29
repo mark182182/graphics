@@ -48,7 +48,7 @@ typedef struct Cell {
  * ........
  */
 typedef struct CellsToDrawSOA {
-  Cell **cells;
+  Cell *cells;
   int *positionsX;
   int *positionsY;
   Color **colors;

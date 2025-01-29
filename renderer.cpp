@@ -84,7 +84,7 @@ void Renderer::render() {
     deltaTime += GetFrameTime();
 
     for (int i = 0; i < Gol2d::CELL_COUNT; i++) {
-      if (cd->cells[i]->is_alive) {
+      if ((&cd->cells[i])->is_alive) {
         DrawRectangle(cd->positionsX[i], cd->positionsY[i],
                       Gol2d::CELL_HEIGHT_RATIO, Gol2d::CELL_WIDTH_RATIO,
                       *cd->colors[i]);
