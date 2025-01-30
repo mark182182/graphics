@@ -37,6 +37,16 @@ void Generator::freeArrays(CellsToDrawSOA *cd) {
   if (cd->cells != nullptr) {
     _mm_free(cd->cells);
   }
+
+  if (cd->positionsX != nullptr) {
+    delete cd->positionsX;
+  }
+  if (cd->positionsY != nullptr) {
+    delete cd->positionsY;
+  }
+  if (cd->colors != nullptr) {
+    delete cd->colors;
+  }
 }
 
 void Generator::initializeCells(CellsToDrawSOA *cd) {
@@ -47,7 +57,7 @@ void Generator::initializeCells(CellsToDrawSOA *cd) {
       (&cd->cells[i])->is_alive = is_alive;
       cd->positionsX[i] = posX;
       cd->positionsY[i] = posY;
-      cd->colors[i] = &Const::RANDOM_COLORS[std::rand() % 20];
+      cd->colors[i] = &Const::RANDOM_COLORS[std::rand() % 2];
       i++;
     }
   }
@@ -67,6 +77,9 @@ CellsToDrawSOA *Generator::deepCopyCells(CellsToDrawSOA *originalCd) {
   }
 
   newCd->cells = newCells;
+  newCd->positionsX = nullptr;
+  newCd->positionsY = nullptr;
+  newCd->colors = nullptr;
   return newCd;
 }
 

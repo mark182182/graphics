@@ -91,7 +91,8 @@ void Renderer::render() {
       }
     }
 
-    DrawTextEx(*firaCodeFont, "\u2714", cursorPosition, 32, 0, BLACK);
+    DrawRectangle(10, 10, 450, 140, RAYWHITE);
+    //DrawTextEx(*firaCodeFont, "|", cursorPosition, 32, 0, BLACK);
     DrawTextEx(*firaCodeFont, ("FPS: " + std::to_string(GetFPS())).c_str(),
                Vector2{10, 10}, 32, 0, RED);
     DrawTextEx(*firaCodeFont,
