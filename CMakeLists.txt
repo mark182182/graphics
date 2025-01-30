@@ -14,7 +14,7 @@ endif()
 project("graphics_test")
 
 # Add source to this project's executable.
-add_executable (graphics_test "main.cpp" "${CMAKE_SOURCE_DIR}/resources" "gol2d.cpp" "font.cpp"   "renderer.cpp"  "const.cpp" "hash.cpp")
+add_executable (graphics_test "main.cpp" "${CMAKE_SOURCE_DIR}/resources" "gol2d.cpp" "font.cpp"   "renderer.cpp"  "const.cpp" "hash.cpp" "menu.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET graphics_test PROPERTY CXX_STANDARD 11)
@@ -52,5 +52,9 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
 endif()
 
+# Copy resources directory to the output directory
+add_custom_command(TARGET graphics_test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:graphics_test>/resources)
 
 # TODO: Add tests and install targets if needed.

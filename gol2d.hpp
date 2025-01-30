@@ -13,8 +13,6 @@ const int CELL_HEIGHT_SIZE = Const::SCREEN_HEIGHT / CELL_HEIGHT_RATIO;
 const int CELL_WIDTH_SIZE = Const::SCREEN_WIDTH / CELL_WIDTH_RATIO;
 const int CELL_COUNT = CELL_HEIGHT_SIZE * CELL_WIDTH_SIZE;
 
-//
-//
 /*
  * Diagonals relative to the current cell, e.g. if the ratio is 10:
  * top-left  bottom-left bottom-right    top-right
@@ -40,6 +38,7 @@ typedef struct Cell {
  * one continous memory block, from top to bottom.
  *
  * The actual cell values (0 or 1) represent the populated/unpopulated cells.
+ * E.g. alignment:
  *   x012
  * y ____
  * 0|1100|

@@ -4,18 +4,13 @@
 #include <iostream>
 #include <string>
 #include <raylib.h>
+#include <unordered_map>
 
 namespace DisplayFont {
-const unsigned int MAX_FONTS = 64;
 
-typedef struct FontDict {
-  std::string names[MAX_FONTS];
-  Font fonts[MAX_FONTS];
-} FontDict;
+enum FontType { FiraCodeRetina };
 
-FontDict *loadFonts();
-
-Font *getFontByName(FontDict *fd, std::string name);
-
+void loadFonts();
+Font getFont(FontType type);
 } // namespace DisplayFont
 #endif

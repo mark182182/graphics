@@ -4,34 +4,21 @@
 #include <string>
 
 namespace DisplayFont {
+
+std::unordered_map<FontType, Font> fontsByType = {};
+
 /*
- * Load fonts from resources/fonts
- *
- * @return FontDict
+ * Load fonts into fontsByType
  */
-FontDict *loadFonts() {
+void DisplayFont::loadFonts() {
 
   // FiraCode-Retina.ttf
   Font font =
       LoadFontEx("resources/fonts/firacode/FiraCode-Retina.ttf", 32, 0, 250);
 
   SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
-  FontDict *fd = new FontDict;
-  fd->fonts[0] = font;
-  fd->names[0] = "FiraCode-Retina";
-
-  return fd;
+  fontsByType[FontType::FiraCodeRetina] = font;
 }
 
-Font *getFontByName(FontDict *fd, std::string name) {
-  for (int i = 0; i < MAX_FONTS; i++) {
-    if (fd->names[i] == name) {
-      return &fd->fonts[i];
-    }
-  }
-
-  char FONT_NOT_FOUND_MSG[128] = {"Font not found: "};
-  throw strcat_s(FONT_NOT_FOUND_MSG, sizeof FONT_NOT_FOUND_MSG, name.c_str());
-}
-
+Font DisplayFont::getFont(FontType type) { return fontsByType[type]; };
 } // namespace DisplayFont
