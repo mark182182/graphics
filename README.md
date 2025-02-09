@@ -15,8 +15,7 @@
 
 # Project 1: Game of Life
 - Conway's famous game of life celluar automation.
-- Use SMID and AVX instructions for calculation ([docs](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#techs=AVX))
-	- Have to pass the `-mrdrnd` flag to CMake and include ``
+- Used SMID and AVX instructions ([docs](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#techs=AVX))
 ## Solution in 2D
 - TBD
 ## Solution in 3D

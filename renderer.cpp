@@ -7,15 +7,15 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <string>
-#include <time.h>
 #include "const.hpp"
+#include "menu.hpp"
 
-void Renderer::render() {
+void Renderer ::render() {
   InitWindow(Const::SCREEN_WIDTH, Const::SCREEN_HEIGHT, "Graphics example");
 
   // load any long living resources here
-  DisplayFont::loadFonts();
-  Font firaCodeFont = DisplayFont::getFont(DisplayFont::FiraCodeRetina);
+  Menu menu = Menu();
+  menu.init();
 
   bool isWireframeMode = false;
   int pressed = 0;
@@ -25,17 +25,17 @@ void Renderer::render() {
   int fpsCap = 60;
   SetTargetFPS(fpsCap);
 
-  std::unique_ptr<Gol2d::CellsToDrawSOA> cd =
-      std::unique_ptr<Gol2d::CellsToDrawSOA>(new Gol2d::CellsToDrawSOA);
-  Gol2d::Generator::initArraysBasedOnCellSize(cd.get());
-  Gol2d::Generator::initializeCells(cd.get());
+  Gol2d::CellsToDrawSOA cd = Gol2d::CellsToDrawSOA();
+  Gol2d::Generator::initArraysBasedOnCellSize(&cd);
+  Gol2d::Generator::initializeCells(&cd);
   std::unique_ptr<Gol2d::CellsToDrawSOA> previousCd = nullptr;
 
   while (!WindowShouldClose() && pressed != 'q') {
     ClearBackground(WHITE);
 
     // update variables here
-    Vector2 cursorPosition = GetMousePosition();
+    menu.update();
+
     pressed = GetCharPressed();
 
     if (fpsCap == 60 && pressed == 'c') {
@@ -55,10 +55,9 @@ void Renderer::render() {
     }
 
     BeginDrawing();
-    HideCursor();
 
     if (pressed == 'r') {
-      Gol2d::Generator::initializeCells(cd.get());
+      Gol2d::Generator::initializeCells(&cd);
     }
 
     if (pressed == 'p') {
@@ -78,40 +77,21 @@ void Renderer::render() {
       // before the next generation, we have to make a copy of the first,
       // generation to check the neighbours
       previousCd = std::unique_ptr<Gol2d::CellsToDrawSOA>(
-          Gol2d::Generator::deepCopyCells(cd.get()));
-      Gol2d::Generator::nextGeneration(cd.get(), previousCd.get());
+          Gol2d::Generator::deepCopyCells(&cd));
+      Gol2d::Generator::nextGeneration(&cd, previousCd.get());
       deltaTime = 0;
     }
     deltaTime += GetFrameTime();
 
     for (int i = 0; i < Gol2d::CELL_COUNT; i++) {
-      if ((&cd->cells[i])->is_alive) {
-        DrawRectangle(cd->positionsX[i], cd->positionsY[i],
+      if (cd.cells[i].is_alive) {
+        DrawRectangle(cd.positionsX[i], cd.positionsY[i],
                       Gol2d::CELL_HEIGHT_RATIO, Gol2d::CELL_WIDTH_RATIO,
-                      *cd->colors[i]);
+                      *cd.colors[i]);
       }
     }
 
-    Rectangle rect = Rectangle{10, 110, 32*9, 32};
-
-    if (CheckCollisionPointRec(cursorPosition, rect)) {
-      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        printf("foo");
-      }
-    }
-
-    DrawRectangle(10, 10, 450, 140, RAYWHITE);
-    DrawRectangleRec(rect, BLACK);
-
-    DrawTextEx(firaCodeFont, "|", cursorPosition, 32, 0, BLACK);
-    DrawTextEx(firaCodeFont, ("FPS: " + std::to_string(GetFPS())).c_str(),
-               Vector2{10, 10}, 32, 0, RED);
-    DrawTextEx(firaCodeFont,
-               ("Frametime: " + std::to_string(GetFrameTime()) + " ms").c_str(),
-               Vector2{10, 40}, 32, 0, RED);
-    DrawTextEx(firaCodeFont, "Press 't' for wireframe mode", Vector2{10, 70},
-               32, 0, RED);
-    DrawTextEx(firaCodeFont, "Press 'q' to quit", Vector2{rect.x, rect.y}, 32, 0, RED);
+    menu.draw();
     EndDrawing();
 
     // free objects after each frame
@@ -119,5 +99,5 @@ void Renderer::render() {
 
   // free any objects that are long living, but don't need to be present on
   // every frame
-  Gol2d::Generator::freeArrays(cd.get());
+  Gol2d::Generator::freeArrays(&cd);
 }

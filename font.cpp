@@ -20,5 +20,7 @@ void DisplayFont::loadFonts() {
   fontsByType[FontType::FiraCodeRetina] = font;
 }
 
-Font DisplayFont::getFont(FontType type) { return fontsByType[type]; };
+Font DisplayFont::getFont(FontType type) {
+  return fontsByType[type];
+};
 } // namespace DisplayFont

@@ -64,8 +64,6 @@ void Generator::initializeCells(CellsToDrawSOA *cd) {
 }
 
 CellsToDrawSOA *Generator::deepCopyCells(CellsToDrawSOA *originalCd) {
-  Gol2d::CellsToDrawSOA *newCd = new Gol2d::CellsToDrawSOA;
-
   Cell *newCells = (Cell *)_mm_malloc(CELL_COUNT * sizeof(Cell), 32);
   if (!newCells) {
     throw std::bad_alloc();
@@ -76,6 +74,7 @@ CellsToDrawSOA *Generator::deepCopyCells(CellsToDrawSOA *originalCd) {
     (&newCells[i])->is_alive = (&originalCd->cells[i])->is_alive;
   }
 
+  Gol2d::CellsToDrawSOA *newCd = new Gol2d::CellsToDrawSOA;
   newCd->cells = newCells;
   newCd->positionsX = nullptr;
   newCd->positionsY = nullptr;
@@ -83,6 +82,7 @@ CellsToDrawSOA *Generator::deepCopyCells(CellsToDrawSOA *originalCd) {
   return newCd;
 }
 
+// TODO: use a compute shader instead (OpenGL 4.3)
 void Generator::nextGeneration(CellsToDrawSOA *cd, CellsToDrawSOA *previousCd) {
 
   for (int i = 0; i < CELL_COUNT; i++) {
